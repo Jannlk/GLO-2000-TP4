@@ -3,6 +3,7 @@ import os.path
 from email.mime.text import MIMEText
 from hashlib import sha256
 import getpass
+import pickle
 
 #Connexion au serveur
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -71,8 +72,8 @@ while True:
 
 
     while True:
-        option = input("Menu principale\n1. Envoi de courriels\n2. Consultation de courriels\n3. Statistiques\n4. Quitter\n")
-        while option != ("1" or "2" or "3" or "4"):
+        option = input("\nMenu principale\n1. Envoi de courriels\n2. Consultation de courriels\n3. Statistiques\n4. Quitter\n")
+        while option not in  ["1", "2", "3", "4"]:
             option = input("Veuillez saisir une option valide:\n")
 
         s.send(option.encode())
@@ -83,19 +84,60 @@ while True:
 
             response = "-1"
             while(response == "-1"):
-                email_to = input("À: ")
+                email_to = input("\nÀ: ")
                 s.send(email_to.encode())
                 response = s.recv(1024).decode()
 
-            subject = input("Sujet: ")
+            subject = input("\nSujet: ")
             s.send(subject.encode())
-            data = input("Message: ")
+            data = input("\nMessage: ")
             s.send(data.encode())
 
             response = s.recv(1024).decode()
             if(response == "-1"):
-                print("Erreur lors de l'envoie du courriel.")
+                print("\nErreur lors de l'envoie du courriel.")
                 continue
-        #elif option == "2":
-        #elif option == "3":
-        #elif option == "4":
+            else:
+                print("\nCourriel envoyé avec succès!")
+        elif option == "2":
+            s.send(id.encode())
+            data_string = s.recv(1024)
+            mails = pickle.loads(data_string)
+
+            print("\nListe de vos courriels: \n")
+
+            compteur = 1;
+            for mail in mails:
+                print("\n" + str(compteur) + ". " + mail)
+                compteur += 1
+
+            email_id = input("\nQuel courriel souhaitez-vous visionner? \n")
+
+            s.send(email_id.encode())
+
+            email_content = s.recv(1024).decode()
+            print("\n" + email_content)
+            input("\nAppuyez sur Enter pour continuer...")
+            continue
+        elif option == "3":
+            s.send(id.encode())
+
+            filesize = s.recv(1024).decode()
+
+            data_string = s.recv(1024)
+            mails = pickle.loads(data_string)
+
+            print("\nNombre de messages: " + str(len(mails)) + "\n")
+            print("\nTaille du repertoire personnel (en octets): " + filesize + "\n")
+            print("\nListe de vos courriels: \n")
+
+            compteur = 1;
+            for mail in mails:
+                print("\n" + str(compteur) + ". " + mail)
+                compteur += 1
+            input("\nAppuyez sur Enter pour continuer...")
+            continue
+        elif option == "4":
+            break;
+    s.close()
+    exit()

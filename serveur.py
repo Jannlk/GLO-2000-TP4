@@ -1,7 +1,7 @@
 import smtplib, re, socket, optparse, sys
 import os.path
+import pickle
 from email.mime.text import MIMEText
-from hashlib import sha256
 import utilitaires
 
 #Création du socket
@@ -11,6 +11,7 @@ serversocket.bind(("localhost", 1337))
 serversocket.listen(5)
 print("Listening on port " + str(serversocket.getsockname()[1]))
 nbConnexions = 0
+nbDeconnexions = 0
 
 while True:
     #Un client se connecte au serveur
@@ -45,10 +46,6 @@ while True:
             continue
 
 
-
-
-
-
     #Si l'utilisateur choisit de se créer un compte
     elif option == "2":
         #Création de l'identifiant
@@ -72,54 +69,91 @@ while True:
         if verificationErreur == "0":
             continue
 
-    # Réception du choix d'option du menu connexion.
-    option = s.recv(1024).decode()
 
-    #Envoie d'un courriel
-    if option == "1":
-        # reception du courriel et verification qu’il est valide
-        print("Test 5")
-        emailFrom = s.recv(1024).decode()
-        print("Test 5")
-        emailAddress = s.recv(1024).decode()
-        print("Test 5")
-        while not re.search(r"^[^@]+@[^@]+\.[^@]+$", emailAddress):
-            print("Test 6")
-            msg = "-1"
-            s.send(msg.encode())
+
+    while True:
+        # Réception du choix d'option du menu connexion.
+        option = s.recv(1024).decode()
+
+        #Envoie d'un courriel
+        if option == "1":
+            # reception du courriel et verification qu’il est valide
+            emailFrom = s.recv(1024).decode()
             emailAddress = s.recv(1024).decode()
-        msg = "0"
-        s.send(msg.encode())
-
-        # creation du courriel
-        subject = s.recv(1024).decode()
-        data = s.recv(1024).decode()
-        courriel = MIMEText(data)
-        courriel["From"] = emailFrom
-        courriel["To"] = emailAddress
-        courriel["Subject"] = subject
-
-        #Externe
-        use_smtp_ulaval = False
-        if(not re.search(r"^[^@]+@reseauglo\.ca$", emailAddress)):
-            use_smtp = True
-
-        if(use_smtp_ulaval):
-
-            # envoi du courriel par le smtp de l'ecole
-            try:
-                smtpConnection = smtplib.SMTP(host="smtp.ulaval.ca", timeout=10)
-                smtpConnection.sendmail(courriel["From"], courriel["To"], courriel.as_string())
-                smtpConnection.quit()
-                msg = "0"
-                s.send(msg.encode())
-            except:
+            while not re.search(r"^[^@]+@[^@]+\.[^@]+$", emailAddress):
                 msg = "-1"
                 s.send(msg.encode())
-        else:
-            chemin_dossier = emailAddress.replace("@reseauglo.ca", "")
-            verification = utilitaires.courrielLocal(chemin_dossier, courriel['Subject'], courriel['From'], courriel.as_string())
-            if(verification != "0"):
-                print("Erreur lors de l'écriture du fichier local pour l'utilisateur " + chemin_dossier)
+                emailAddress = s.recv(1024).decode()
+            msg = "0"
+            s.send(msg.encode())
 
+            # creation du courriel
+            subject = s.recv(1024).decode()
+            data = s.recv(1024).decode()
+            courriel = MIMEText(data)
+            courriel["From"] = emailFrom
+            courriel["To"] = emailAddress
+            courriel["Subject"] = subject
 
+            #Externe
+            use_smtp_ulaval = False
+            if(re.match(r"^[^@]+@reseauglo\.ca$", emailAddress) == None):
+                use_smtp_ulaval = True
+
+            if use_smtp_ulaval == True:
+
+                # envoi du courriel par le smtp de l'ecole
+                try:
+                    smtpConnection = smtplib.SMTP(host="smtp.ulaval.ca", timeout=10)
+                    smtpConnection.sendmail(courriel["From"], courriel["To"], courriel.as_string())
+                    smtpConnection.quit()
+                    msg = "0"
+                    s.send(msg.encode())
+                except:
+                    msg = "-1"
+                    s.send(msg.encode())
+            else:
+                chemin_dossier = emailAddress.replace("@reseauglo.ca", "")
+                verification = utilitaires.courrielLocal(chemin_dossier, courriel['Subject'], courriel.as_string())
+                if(verification != "0"):
+                    utilitaires.courrielDump(courriel['Subject'], courriel.as_string())
+                s.send(verification.encode())
+
+        elif option == "2":
+            id = s.recv(1024).decode()
+            files = os.listdir(id)
+            files.remove("config.txt")
+
+            mails = []
+
+            for file in files:
+                file = file.replace(".txt", "")
+                mails.append(file)
+
+            data_string = pickle.dumps(mails)
+            s.send(data_string)
+
+            email_id = int(s.recv(1024).decode()) - 1
+            email_content = utilitaires.ouvrirLocal(id, files[email_id])
+            s.send(email_content.encode())
+
+        elif option == "3":
+            id = s.recv(1024).decode()
+            filesize = utilitaires.getSize(id)
+            s.send(str(filesize).encode())
+            files = os.listdir(id)
+            files.remove("config.txt")
+
+            mails = []
+
+            for file in files:
+                file = file.replace(".txt", "")
+                mails.append(file)
+
+            data_string = pickle.dumps(mails)
+            s.send(data_string)
+
+        elif option == "4":
+            nbDeconnexions += 1
+            print(str(nbDeconnexions) + "e deconnexion au serveur")
+            break;

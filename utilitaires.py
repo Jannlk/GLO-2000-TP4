@@ -1,6 +1,7 @@
 import os.path
 import re
 from hashlib import sha256
+from os.path import getsize
 
 #Méthode qui crée un nouveau compte dans le répertoire du serveur
 #id : nom du dossier
@@ -54,19 +55,54 @@ def connexion(id, mdp):
     return state
 
 #Méthode qui permet d'ouvrir le dossier d'un utilisateur
-#id, mdp : L'identifiant et le mot de passe de l'utilisateur
+#id, subject, data: L'identifiant de l'utilisateur, le sujet et corps du message
 #Return : "-1" s'il y a un problème avec lors de l'ouverture du fichier
-#         "0" si le mot de passe de correspond pas
-#         "1" si la connexion est un succès
-def courrielLocal(id, sujet, emailFrom, data):
+#         "0" si tout se passe bien
+def courrielLocal(id, subject, data):
     state = "0"
     try:
-        file = open(id + "/" + sujet + ".txt", "a")
-        file.write("From: " + emailFrom + "\n")
-        file.write("Message: " + data)
+        file = open(id + "/" + subject + ".txt", "w")
+        file.write(data)
         file.close()
         state = "0"
     except:
         state = "-1"
 
     return state
+
+#Méthode qui permet d'ouvrir un courriel local
+#subject, data: Sujet et corps du courriel
+def ouvrirLocal(id, filename):
+    try:
+        file = open( id + "/" + filename, "r")
+        str_content = file.read();
+        file.close()
+        return str_content
+    except:
+        print("Fichier introuvable.")
+
+
+
+#Méthode qui permet d'enregistrer un courriel vers un utilisateur inexistant
+#subject, data: Sujet et corps du courriel
+def courrielDump(subject, data):
+    try:
+        if not os.path.exists("DESTERREUR"):
+            os.makedirs("DESTERREUR")
+        file = open("DESTERREUR/" + subject + ".txt", "w")
+        file.write(data)
+        file.close()
+    except:
+        print("Guess somebody fucked up good.")
+
+
+#Méthode qui retourne la grosseur d'un directory
+#id: le directory
+def getSize(id):
+    try:
+        size = getsize(id)
+        return size
+    except:
+        print("Mauvais nom de repertoire")
+
+
