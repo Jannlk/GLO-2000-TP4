@@ -68,9 +68,11 @@ while True:
         if verification == "0":
             continue
 
+    # Réception du choix d'option du menu connexion.
+    option = s.recv(1024).decode()
 
     #Envoie d'un courriel
-    elif option == "3":
+    if option == "1":
         # reception du courriel et verification qu’il est valide
         print("Test 5")
         emailFrom = s.recv(1024).decode()
@@ -83,6 +85,7 @@ while True:
             s.send(msg.encode())
             emailAddress = s.recv(1024).decode()
         msg = "0"
+        s.send(msg.encode())
 
         # creation du courriel
         subject = s.recv(1024).decode()

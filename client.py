@@ -63,11 +63,10 @@ while True:
         option = input("Menu principale\n1. Envoi de courriels\n2. Consultation de courriels\n3. Statistiques\n4. Quitter\n")
         while option != ("1" or "2" or "3" or "4"):
             option = input("Veuillez saisir une option valide:\n")
-        option = str(int(option) + 2)
-        print(option)
+
         s.send(option.encode())
 
-        if option == "3":
+        if option == "1":
             email_from = id + "@reseauglo.ca"
             s.send(email_from.encode())
             response = "-1"
