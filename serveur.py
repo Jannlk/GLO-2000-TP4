@@ -24,27 +24,26 @@ while True:
     #Si l'utilisateur choisit de se connecter
     if option == "1":
 
-        #On vérifie que le compte existe
+        #On vérifie que le compte existe et que le mot de passe est valide
         id = s.recv(1024).decode()
-        verification = utilitaires.verifierID(id)
-        s.send(verification.encode())
-        while verification != "1":
-            id = s.recv(1024).decode()
-            verification = utilitaires.verifierID(id)
-            s.send(verification.encode())
-
-        #On vérifie le mot de passe
         mdp = s.recv(1024).decode()
-        verification = utilitaires.connexion(id, mdp)
-        s.send(verification.encode())
-        #Si un problème est survenu
-        if verification == "-1":
-            continue
-        #Sinon on vérifie que le mot de passe est bon
-        while verification != "1":
+        verificationID = utilitaires.verifierID(id)
+        s.send(verificationID.encode())
+        if verificationID != "0":
+            verificationMDP = utilitaires.connexion(id, mdp)
+            s.send(verificationMDP.encode())
+
+        while verificationID != "1" or verificationMDP != "1":
+            id = s.recv(1024).decode()
             mdp = s.recv(1024).decode()
-            verification = utilitaires.connexion(id, mdp)
-            s.send(verification.encode())
+            verificationID = utilitaires.verifierID(id)
+            s.send(verificationID.encode())
+            if verificationID != "0":
+                verificationMDP = utilitaires.connexion(id, mdp)
+                s.send(verificationMDP.encode())
+        if verificationMDP == "-1":
+            continue
+
 
 
 
@@ -54,18 +53,23 @@ while True:
     elif option == "2":
         #Création de l'identifiant
         id = s.recv(1024).decode()
-        verification = utilitaires.verifierID(id)
-        s.send(verification.encode())
-        while utilitaires.verifierID(id) == "1":
-            id = s.recv(1024).decode()
-            verification = utilitaires.verifierID(id)
-            s.send(verification.encode())
-
-        #Création du mot de passe
         mdp = s.recv(1024).decode()
-        verification = utilitaires.creerCompte(id, mdp)
-        s.send(verification.encode())
-        if verification == "0":
+        verificationID = utilitaires.verifierID(id)
+        s.send(verificationID.encode())
+        if verificationID != "1":
+            verificationMDP = utilitaires.veififierMDP(mdp)
+            s.send(verificationMDP.encode())
+        while verificationID != "0" or verificationMDP != "1":
+            id = s.recv(1024).decode()
+            mdp = s.recv(1024).decode()
+            verificationID = utilitaires.verifierID(id)
+            s.send(verificationID.encode())
+            if verificationID != "1":
+                verificationMDP = utilitaires.veififierMDP(mdp)
+                s.send(verificationMDP.encode())
+        verificationErreur = utilitaires.creerCompte(id, mdp)
+        s.send(verificationErreur.encode())
+        if verificationErreur == "0":
             continue
 
     # Réception du choix d'option du menu connexion.
@@ -110,13 +114,12 @@ while True:
                 msg = "0"
                 s.send(msg.encode())
             except:
-                msg = "0"
+                msg = "-1"
                 s.send(msg.encode())
-
-
-            s.send(msg.encode())
         else:
             chemin_dossier = emailAddress.replace("@reseauglo.ca", "")
-            verification = utilitaires.creerLocal(chemin_dossier, courriel['Subject'], courriel['From'], data)
+            verification = utilitaires.courrielLocal(chemin_dossier, courriel['Subject'], courriel['From'], courriel.as_string())
+            if(verification != "0"):
+                print("Erreur lors de l'écriture du fichier local pour l'utilisateur " + chemin_dossier)
 
 

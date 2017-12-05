@@ -1,4 +1,5 @@
 import os.path
+import re
 from hashlib import sha256
 
 #Méthode qui crée un nouveau compte dans le répertoire du serveur
@@ -25,6 +26,15 @@ def verifierID(id):
         state = "1"
     return state
 
+#Méthode qui vérifie si le mot de passe respecte les conditions
+#mdp : le mot de passe
+#return : "1" si le mot de passe respecte les conditions, "0" sinon.
+def veififierMDP(mdp):
+    state = "0"
+    if (re.search(r"^[a-zA-Z0-9]{6,12}$", mdp) and re.search(r".*[0-9].*", mdp) and re.search(r".*[a-zA-Z].*",mdp)):
+        state = "1"
+    return state
+
 #Méthode qui permet d'ouvrir le dossier d'un utilisateur
 #id, mdp : L'identifiant et le mot de passe de l'utilisateur
 #Return : "-1" s'il y a un problème avec lors de l'ouverture du fichier
@@ -48,7 +58,7 @@ def connexion(id, mdp):
 #Return : "-1" s'il y a un problème avec lors de l'ouverture du fichier
 #         "0" si le mot de passe de correspond pas
 #         "1" si la connexion est un succès
-def creerLocal(id, sujet, emailFrom, data):
+def courrielLocal(id, sujet, emailFrom, data):
     state = "0"
     try:
         file = open(id + "/" + sujet + ".txt", "a")
