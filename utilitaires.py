@@ -1,4 +1,5 @@
 import os.path
+import re
 from hashlib import sha256
 
 #Méthode qui crée un nouveau compte dans le répertoire du serveur
@@ -22,6 +23,15 @@ def creerCompte(id, mdp):
 def verifierID(id):
     state = "0"
     if os.path.exists(id + "/config.txt"):
+        state = "1"
+    return state
+
+#Méthode qui vérifie si le mot de passe respecte les conditions
+#mdp : le mot de passe
+#return : "1" si le mot de passe respecte les conditions, "0" sinon.
+def veififierMDP(mdp):
+    state = "0"
+    if (re.search(r"^[a-zA-Z0-9]{6,12}$", mdp) and re.search(r".*[0-9].*", mdp) and re.search(r".*[a-zA-Z].*",mdp)):
         state = "1"
     return state
 

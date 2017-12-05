@@ -18,52 +18,61 @@ while True:
     #Se connecter
     if option == "1":
         id = input("Veuillez saisir votre identifiant:\n")
-        s.send(id.encode())
-        reponse = s.recv(1024).decode()
-        while reponse != "1":
-            id = input("Veuillez saisir un identifiant valide:\n")
-            s.send(id.encode())
-            reponse = s.recv(1024).decode()
-
         mdp = getpass.getpass("Veuillez saisir votre mot de passe:\n")
+        s.send(id.encode())
         s.send(mdp.encode())
-        reponse = s.recv(1024).decode()
-        if reponse == "-1":
-            print("Desole, un probleme est survenu.")
-            continue
-        while reponse != "1":
-            mdp = getpass.getpass("Veuiller saisir un mot de passe valide")
+        reponseID = s.recv(1024).decode()
+        if reponseID != "0":
+            reponseMDP = s.recv(1024).decode()
+        while reponseID != "1" or reponseMDP != "1":
+            if reponseID != "1":
+                id = input("Veuillez saisir un identifiant valide:\n")
+                mdp = getpass.getpass("Veuillez saisir votre mot de passe:\n")
+            elif reponseMDP == "-1":
+                print("Desole, un probleme est survenu.")
+                continue
+            else:
+                print("Ce n'est pas le bon mot de passe. Veuillez reessayer.")
+                id = input("Veuillez saisir votre identifiant:\n")
+                mdp = getpass.getpass("Veuillez saisir votre mot de passe:\n")
+            s.send(id.encode())
             s.send(mdp.encode())
-            reponse = s.recv(1024).decode()
+            reponseID = s.recv(1024).decode()
+            if reponseID != "0":
+                reponseMDP = s.recv(1024).decode()
+
 
     #Créer un compte
     else:
         id = input("Veuillez choisir un identifiant:\n")
-        s.send(id.encode())
-        reponse = s.recv(1024).decode()
-        while reponse != "0":
-            id = input("Cet identifiant est deja pris, veuillez en choisir un autre:\n")
-            s.send(id.encode())
-            reponse = s.recv(1024).decode()
-
-
         mdp = getpass.getpass("Veuillez choisir un mot de passe contenant de 6 à 12 carateres, dont au moins une lettre et un chiffre:\n")
-        while not (re.search(r"^[a-zA-Z0-9]{6,12}$", mdp) and re.search(r".*[0-9].*", mdp) and re.search(r".*[a-zA-Z].*",mdp)):
-            mdp = getpass.getpass("Ce mot de passe ne respecte pas les conditions, veuillez en choisir un autre:\n")
+        s.send(id.encode())
         s.send(mdp.encode())
-
-        reponse = s.recv(1024).decode()
-        if reponse == "0":
-            print("Desole, un probleme est survenu.")
+        reponseID = s.recv(1024).decode()
+        if reponseID != "1":
+            reponseMDP = s.recv(1024).decode()
+        while reponseID != "0" or reponseMDP != "1":
+            if reponseID != "0":
+                id = input("Cet identifiant est deja pris, veuillez en choisir un autre:\n")
+                mdp = getpass.getpass("Veuillez saisir votre mot de passe:\n")
+            else:
+                print("Ce mot de passe ne respecte pas les conditions, veuilelz en choisir un autre.")
+                id = input("Veuillez saisir votre identifiant a nouveau:\n")
+                mdp = getpass.getpass("Veuillez saisir votre nouveau mot de passe:\n")
+            s.send(id.encode())
+            s.send(mdp.encode())
+            reponseID = s.recv(1024).decode()
+            if reponseID != "1":
+                reponseMDP = s.recv(1024).decode()
+        reponseCreationCompte = s.recv(1024).decode()
+        if reponseCreationCompte == "0":
+            print("Desole, un probleme est survenu")
             continue
-
 
 
     while True:
         option = input("Menu principale\n1. Envoi de courriels\n2. Consultation de courriels\n3. Statistiques\n4. Quitter\n")
         while option != ("1" or "2" or "3" or "4"):
             option = input("Veuillez saisir une option valide:\n")
-        s.send(option.encode())
-
-        if option == "1":
+            s.send(option.encode())
 

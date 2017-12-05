@@ -24,27 +24,26 @@ while True:
     #Si l'utilisateur choisit de se connecter
     if option == "1":
 
-        #On vérifie que le compte existe
+        #On vérifie que le compte existe et que le mot de passe est valide
         id = s.recv(1024).decode()
-        verification = utilitaires.verifierID(id)
-        s.send(verification.encode())
-        while verification != "1":
-            id = s.recv(1024).decode()
-            verification = utilitaires.verifierID(id)
-            s.send(verification.encode())
-
-        #On vérifie le mot de passe
         mdp = s.recv(1024).decode()
-        verification = utilitaires.connexion(id, mdp)
-        s.send(verification.encode())
-        #Si un problème est survenu
-        if verification == "-1":
-            continue
-        #Sinon on vérifie que le mot de passe est bon
-        while verification != "1":
+        verificationID = utilitaires.verifierID(id)
+        s.send(verificationID.encode())
+        if verificationID != "0":
+            verificationMDP = utilitaires.connexion(id, mdp)
+            s.send(verificationMDP.encode())
+
+        while verificationID != "1" or verificationMDP != "1":
+            id = s.recv(1024).decode()
             mdp = s.recv(1024).decode()
-            verification = utilitaires.connexion(id, mdp)
-            s.send(verification.encode())
+            verificationID = utilitaires.verifierID(id)
+            s.send(verificationID.encode())
+            if verificationID != "0":
+                verificationMDP = utilitaires.connexion(id, mdp)
+                s.send(verificationMDP.encode())
+        if verificationMDP == "-1":
+            continue
+
 
 
 
@@ -53,25 +52,28 @@ while True:
     else:
         #Création de l'identifiant
         id = s.recv(1024).decode()
-        verification = utilitaires.verifierID(id)
-        s.send(verification.encode())
-        while utilitaires.verifierID(id) == "1":
-            id = s.recv(1024).decode()
-            verification = utilitaires.verifierID(id)
-            s.send(verification.encode())
-
-        #Création du mot de passe
         mdp = s.recv(1024).decode()
-        verification = utilitaires.creerCompte(id, mdp)
-        s.send(verification.encode())
-        if verification == "0":
+        verificationID = utilitaires.verifierID(id)
+        s.send(verificationID.encode())
+        if verificationID != "1":
+            verificationMDP = utilitaires.veififierMDP(mdp)
+            s.send(verificationMDP.encode())
+        while verificationID != "0" or verificationMDP != "1":
+            id = s.recv(1024).decode()
+            mdp = s.recv(1024).decode()
+            verificationID = utilitaires.verifierID(id)
+            s.send(verificationID.encode())
+            if verificationID != "1":
+                verificationMDP = utilitaires.veififierMDP(mdp)
+                s.send(verificationMDP.encode())
+        verificationErreur = utilitaires.creerCompte(id, mdp)
+        s.send(verificationErreur.encode())
+        if verificationErreur == "0":
             continue
 
 
     while True:
         # Réception du choix d'option du menu principal
-        option = s.recv(1024).decode().replace("\n", "")
-
-        if option == "1":
+        option = s.recv(1024).decode()
             
 
