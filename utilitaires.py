@@ -43,4 +43,20 @@ def connexion(id, mdp):
 
     return state
 
+#Méthode qui permet d'ouvrir le dossier d'un utilisateur
+#id, mdp : L'identifiant et le mot de passe de l'utilisateur
+#Return : "-1" s'il y a un problème avec lors de l'ouverture du fichier
+#         "0" si le mot de passe de correspond pas
+#         "1" si la connexion est un succès
+def creerLocal(id, sujet, emailFrom, data):
+    state = "0"
+    try:
+        file = open(id + "/" + sujet + ".txt", "a")
+        file.write("From: " + emailFrom + "\n")
+        file.write("Message: " + data)
+        file.close()
+        state = "0"
+    except:
+        state = "-1"
 
+    return state

@@ -7,7 +7,6 @@ import getpass
 #Connexion au serveur
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost", 1337))
-
 while True:
     #Menu de connexion, choix d'une option
     option = input("Menu de connexion \n1. Se connecter \n2. Creer un compte \n")
@@ -36,8 +35,9 @@ while True:
             s.send(mdp.encode())
             reponse = s.recv(1024).decode()
 
+
     #Créer un compte
-    else:
+    elif option == "2":
         id = input("Veuillez choisir un identifiant:\n")
         s.send(id.encode())
         reponse = s.recv(1024).decode()
@@ -63,7 +63,22 @@ while True:
         option = input("Menu principale\n1. Envoi de courriels\n2. Consultation de courriels\n3. Statistiques\n4. Quitter\n")
         while option != ("1" or "2" or "3" or "4"):
             option = input("Veuillez saisir une option valide:\n")
+        option = str(int(option) + 2)
+        print(option)
         s.send(option.encode())
 
-        if option == "1":
-
+        if option == "3":
+            email_from = id + "@reseauglo.ca"
+            s.send(email_from.encode())
+            response = "-1"
+            while(response == "-1"):
+                email_to = input("À: ")
+                print("Test 1")
+                s.send(email_to.encode())
+                print("Test 2")
+                response = s.recv(1024).decode()
+                print("Test 3")
+            subject = input("Sujet: ")
+            s.send(subject.encode())
+            data = input("Message: ")
+            s.send(data.encode())

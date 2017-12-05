@@ -49,8 +49,9 @@ while True:
 
 
 
+
     #Si l'utilisateur choisit de se créer un compte
-    else:
+    elif option == "2":
         #Création de l'identifiant
         id = s.recv(1024).decode()
         verification = utilitaires.verifierID(id)
@@ -68,10 +69,51 @@ while True:
             continue
 
 
-    while True:
-        # Réception du choix d'option du menu principal
-        option = s.recv(1024).decode().replace("\n", "")
+    #Envoie d'un courriel
+    elif option == "3":
+        # reception du courriel et verification qu’il est valide
+        print("Test 5")
+        emailFrom = s.recv(1024).decode()
+        print("Test 5")
+        emailAddress = s.recv(1024).decode()
+        print("Test 5")
+        while not re.search(r"^[^@]+@[^@]+\.[^@]+$", emailAddress):
+            print("Test 6")
+            msg = "-1"
+            s.send(msg.encode())
+            emailAddress = s.recv(1024).decode()
+        msg = "0"
 
-        if option == "1":
-            
+        # creation du courriel
+        subject = s.recv(1024).decode()
+        data = s.recv(1024).decode()
+        courriel = MIMEText(data)
+        courriel["From"] = emailFrom
+        courriel["To"] = emailAddress
+        courriel["Subject"] = subject
+
+        #Externe
+        use_smtp_ulaval = False
+        if(not re.search(r"^[^@]+@reseauglo\.ca$", emailAddress)):
+            use_smtp = True
+
+        if(use_smtp_ulaval):
+
+            # envoi du courriel par le smtp de l'ecole
+            try:
+                smtpConnection = smtplib.SMTP(host="smtp.ulaval.ca", timeout=10)
+                smtpConnection.sendmail(courriel["From"], courriel["To"], courriel.as_string())
+                smtpConnection.quit()
+                msg = "0"
+                s.send(msg.encode())
+            except:
+                msg = "0"
+                s.send(msg.encode())
+
+
+            s.send(msg.encode())
+        else:
+            chemin_dossier = emailAddress.replace("@reseauglo.ca", "")
+            verification = utilitaires.creerLocal(chemin_dossier, courriel['Subject'], courriel['From'], data)
+
 
