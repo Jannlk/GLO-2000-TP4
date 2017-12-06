@@ -5,8 +5,11 @@ from email.mime.text import MIMEText
 import utilitaires
 
 parser = optparse.OptionParser()
+parser.add_option("-a", "--address", action="store", dest="address", default="localhost")
 parser.add_option("-p", "--port", action="store", dest="port", type=int, default=1337)
 opts = parser.parse_args(sys.argv[1:])[0]
+
+destination = (opts.address, opts.port)
 #Création du socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

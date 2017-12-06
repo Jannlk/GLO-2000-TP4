@@ -9,6 +9,7 @@ parser = optparse.OptionParser()
 parser.add_option("-a", "--address", action="store", dest="address", default="localhost")
 parser.add_option("-p", "--port", action="store", dest="port", type=int, default=1337)
 opts = parser.parse_args(sys.argv[1:])[0]
+
 destination = (opts.address, opts.port)
 #Connexion au serveur
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
