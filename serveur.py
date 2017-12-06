@@ -13,7 +13,7 @@ destination = (opts.address, opts.port)
 #Création du socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-serversocket.bind(("localhost", opts.port))
+serversocket.bind(destination)
 serversocket.listen(5)
 print("Listening on port " + str(serversocket.getsockname()[1]))
 nbConnexions = 0
