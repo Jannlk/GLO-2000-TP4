@@ -5,9 +5,17 @@ from hashlib import sha256
 import getpass
 import pickle
 
+parser = optparse.OptionParser()
+parser.add_option("-a", "--address", action="store", dest="address", default="localhost")
+parser.add_option("-p", "--port", action="store", dest="port", type=int, default=1337)
+opts = parser.parse_args(sys.argv[1:])[0]
+destination = (opts.address, opts.port)
 #Connexion au serveur
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(("localhost", 1337))
+s.settimeout(10)
+s.connect(destination)
+s.settimeout(None)
+
 while True:
     #Menu de connexion, choix d'une option
     option = input("Menu de connexion \n1. Se connecter \n2. Creer un compte \n")
